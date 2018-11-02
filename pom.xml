@@ -84,6 +84,7 @@
 
         <!-- jhipster-needle-maven-property -->
         <protobuf.version>3.6.1</protobuf.version>
+        <influxdb-java.version>2.14</influxdb-java.version>
     </properties>
 
     <dependencyManagement>
@@ -357,6 +358,11 @@
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java-util</artifactId>
             <version>${protobuf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.influxdb</groupId>
+            <artifactId>influxdb-java</artifactId>
+            <version>${influxdb-java.version}</version>
         </dependency>
     </dependencies>
 
