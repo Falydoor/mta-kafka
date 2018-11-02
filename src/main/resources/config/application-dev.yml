@@ -46,9 +46,20 @@ spring:
                 binder:
                     brokers: localhost
                     zk-nodes: localhost
+                streams:
+                    binder:
+                        configuration:
+                            default.key.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+                            default.value.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
             bindings:
+                mta-output:
+                    destination: mta
+                input:
+                    destination: mta
                 output:
-                    destination: topic-jhipster
+                    destination: mta-stream
+                stream-input:
+                    destination: mta-stream
     mail:
         host: localhost
         port: 25

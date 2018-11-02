@@ -1,16 +1,11 @@
 package io.github.falydoor.mtakafka.producer.config;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
 import org.springframework.cloud.stream.annotation.EnableBinding;
-import org.springframework.cloud.stream.messaging.Source;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.integration.annotation.InboundChannelAdapter;
-import org.springframework.integration.annotation.Poller;
-import org.springframework.integration.core.MessageSource;
-import org.springframework.messaging.support.GenericMessage;
+import org.springframework.cloud.stream.annotation.Input;
+import org.springframework.cloud.stream.annotation.Output;
+import org.springframework.cloud.stream.binder.kafka.streams.annotations.KafkaStreamsProcessor;
+import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.SubscribableChannel;
 
 /**
  * Configures Spring Cloud Stream support.
@@ -20,22 +15,16 @@ import org.springframework.messaging.support.GenericMessage;
  * See http://docs.spring.io/spring-cloud-stream/docs/current/reference/htmlsingle/
  * for the official Spring Cloud Stream documentation.
  */
-@EnableBinding(value = { Source.class })
+@EnableBinding(value = {KafkaStreamsProcessor.class, MessagingConfiguration.MtaStream.class})
 public class MessagingConfiguration {
+    public interface MtaStream {
+        String OUTPUT = "mta-output";
+        String INPUT = "stream-input";
 
-    @Value("${spring.application.name:JhipsterService}")
-    private String applicationName;
+        @Output(OUTPUT)
+        MessageChannel output();
 
-    /**
-     * This sends a test message at regular intervals set as fixedRate (in ms)
-     *
-     * In order to see the test messages, you can use the Kafka command-line client:
-     * "./kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic topic-jhipster --from-beginning".
-     */
-    @Bean
-    @InboundChannelAdapter(value = Source.OUTPUT, poller = @Poller(fixedRate = "60000"))
-    public MessageSource<String> timerMessageSource() {
-        return () -> new GenericMessage<>("Test message from " + applicationName
-            + " sent at " + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        @Input(INPUT)
+        SubscribableChannel input();
     }
 }
