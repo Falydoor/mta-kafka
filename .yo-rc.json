@@ -1,0 +1,32 @@
+{
+  "generator-jhipster": {
+    "promptValues": {
+      "packageName": "io.github.falydoor.mtakafka.producer"
+    },
+    "jhipsterVersion": "5.5.0",
+    "applicationType": "microservice",
+    "baseName": "producer",
+    "packageName": "io.github.falydoor.mtakafka.producer",
+    "packageFolder": "io/github/falydoor/mtakafka/producer",
+    "serverPort": "8081",
+    "authenticationType": "jwt",
+    "cacheProvider": "hazelcast",
+    "enableHibernateCache": false,
+    "websocket": false,
+    "databaseType": "no",
+    "devDatabaseType": "no",
+    "prodDatabaseType": "no",
+    "searchEngine": false,
+    "messageBroker": "kafka",
+    "serviceDiscoveryType": "eureka",
+    "buildTool": "maven",
+    "enableSwaggerCodegen": false,
+    "jwtSecretKey": "MzFkYjBhMDM4Nzk3NTM3YTI4MTgyYzY5M2E0NjgwMDYyNTJhMWUzZDZjOTBkODc4MTNjZjQ0YWNkZGMzNThmOTMyYzVmYThlMTA1Y2YzNjA4NzQyODcyODdmNzA0NDcyMjVhZDE5ZGZlMmIxOTU5MWE0N2Q5YjE4MTQ4ZGM2Mjc=",
+    "enableTranslation": false,
+    "testFrameworks": [],
+    "jhiPrefix": "jhi",
+    "clientPackageManager": "npm",
+    "skipClient": true,
+    "skipUserManagement": true
+  }
+}
