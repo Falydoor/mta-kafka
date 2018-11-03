@@ -1,6 +1,5 @@
 package io.github.falydoor.mtakafka.producer.service;
 
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.transit.realtime.GtfsRealtime;
 import io.github.falydoor.mtakafka.producer.config.MessagingConfiguration;
 import io.github.falydoor.mtakafka.producer.domain.Subway;
@@ -26,7 +25,6 @@ import org.springframework.web.client.RestTemplate;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -62,11 +60,12 @@ public class MtaService {
         List<Subway> subways = feedIds
             .mapToObj(Integer::toString)
             .flatMap(this::readMtaFeed)
-            .filter(Objects::nonNull)
             .collect(Collectors.toList());
 
         // Publish all subways
-        mtaStream.output().send(MessageBuilder.withPayload(subways).build());
+        if (!subways.isEmpty()) {
+            mtaStream.output().send(MessageBuilder.withPayload(subways).build());
+        }
     }
 
     @StreamListener("input")
@@ -100,15 +99,24 @@ public class MtaService {
             // Call MTA api
             ResponseEntity<byte[]> response = restTemplate.getForEntity("http://datamine.mta.info/mta_esi.php?key={0}&feed_id={1}", byte[].class, MTA_KEY, id);
 
-            // Parse response using protobuff
-            // All subways with no active trip are removed
-            return GtfsRealtime.FeedMessage.parseFrom(response.getBody()).getEntityList().stream()
-                .filter(GtfsRealtime.FeedEntity::hasTripUpdate)
+            // Parse response using protobuf
+            GtfsRealtime.FeedMessage feedMessage = GtfsRealtime.FeedMessage.parseFrom(response.getBody());
+            long departureLimit = feedMessage.getHeader().getTimestamp() + 5 * 60;
+
+            // Only active subways are returned
+            return feedMessage.getEntityList().stream()
+                .filter(feedEntity -> isActive(feedEntity, departureLimit))
                 .map(this::createSubway);
-        } catch (InvalidProtocolBufferException e) {
+        } catch (Exception e) {
             log.error("Error while parsing MTA feed", e);
-            return null;
+            return Stream.empty();
         }
+    }
+
+    private boolean isActive(GtfsRealtime.FeedEntity feedEntity, long departureLimit) {
+        return feedEntity.hasTripUpdate()
+            && feedEntity.getTripUpdate().getStopTimeUpdateCount() > 0
+            && feedEntity.getTripUpdate().getStopTimeUpdate(0).getDeparture().getTime() < departureLimit;
     }
 
     private Subway createSubway(GtfsRealtime.FeedEntity entity) {
