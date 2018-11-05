@@ -10,6 +10,9 @@ public class SubwayCount {
     private Instant start;
     private Instant end;
 
+    public SubwayCount() {
+    }
+
     public SubwayCount(Windowed<String> key, long value) {
         this.route = key.key();
         this.count = value;
