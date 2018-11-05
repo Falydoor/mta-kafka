@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 @Service
@@ -56,11 +55,10 @@ public class MtaService {
     @Scheduled(cron = "0 */" + INTERVAL + " * * * *")
     public void publishMtaFeeds() {
         // Feed ids, more details at https://datamine.mta.info/list-of-feeds
-        IntStream feedIds = IntStream.of(1, 2, 11, 16, 21, 26, 31, 36, 51);
+        Stream<String> feedIds = Stream.of("1", "2", "11", "16", "21", "26", "31", "36", "51");
 
         // Read each feed and build a list of active subways
         List<Subway> subways = feedIds
-            .mapToObj(Integer::toString)
             .flatMap(this::readMtaFeed)
             .collect(Collectors.toList());
 
