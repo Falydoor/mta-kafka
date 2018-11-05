@@ -8,7 +8,6 @@ import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.kstream.TimeWindows;
-import org.apache.kafka.streams.kstream.Windowed;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Point;
@@ -22,7 +21,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -80,7 +78,7 @@ public class MtaService {
             .windowedBy(TimeWindows.of(INTERVAL * 60 * 1000))
             .count(Materialized.as("subwaycounts"))
             .toStream()
-            .map(this::createSubwayCount);
+            .map((key, value) -> new KeyValue<>(null, new SubwayCount(key, value)));
     }
 
     @StreamListener(MessagingConfiguration.MtaStream.INPUT)
@@ -120,14 +118,5 @@ public class MtaService {
         return feedEntity.hasTripUpdate()
             && feedEntity.getTripUpdate().getStopTimeUpdateCount() > 0
             && feedEntity.getTripUpdate().getStopTimeUpdate(0).getDeparture().getTime() < departureLimit;
-    }
-
-    private KeyValue<?, SubwayCount> createSubwayCount(Windowed<String> key, long value) {
-        SubwayCount routeCount = new SubwayCount();
-        routeCount.setRoute(key.key());
-        routeCount.setCount(value);
-        routeCount.setStart(Instant.ofEpochSecond(key.window().start() / 1000));
-        routeCount.setEnd(Instant.ofEpochSecond(key.window().end() / 1000));
-        return new KeyValue<>(null, routeCount);
     }
 }

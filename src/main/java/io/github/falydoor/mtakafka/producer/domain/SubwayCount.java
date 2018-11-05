@@ -1,5 +1,7 @@
 package io.github.falydoor.mtakafka.producer.domain;
 
+import org.apache.kafka.streams.kstream.Windowed;
+
 import java.time.Instant;
 
 public class SubwayCount {
@@ -7,6 +9,13 @@ public class SubwayCount {
     private long count;
     private Instant start;
     private Instant end;
+
+    public SubwayCount(Windowed<String> key, long value) {
+        this.route = key.key();
+        this.count = value;
+        this.start = Instant.ofEpochSecond(key.window().start() / 1000);
+        this.end = Instant.ofEpochSecond(key.window().end() / 1000);
+    }
 
     public String getRoute() {
         return route;
