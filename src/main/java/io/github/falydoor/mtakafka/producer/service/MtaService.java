@@ -101,6 +101,8 @@ public class MtaService {
 
             // Parse response using protobuf
             GtfsRealtime.FeedMessage feedMessage = GtfsRealtime.FeedMessage.parseFrom(response.getBody());
+
+            // Build departure limit using timestamp from response
             long departureLimit = feedMessage.getHeader().getTimestamp() + INTERVAL * 60;
 
             // Only active subways are returned
@@ -114,6 +116,7 @@ public class MtaService {
     }
 
     private boolean isActive(GtfsRealtime.FeedEntity feedEntity, long departureLimit) {
+        // A subway is active if he has a scheduled departure before the limit
         return feedEntity.hasTripUpdate()
             && feedEntity.getTripUpdate().getStopTimeUpdateCount() > 0
             && feedEntity.getTripUpdate().getStopTimeUpdate(0).getDeparture().getTime() < departureLimit;
