@@ -36,6 +36,8 @@ public class MtaService {
 
     private static final String MTA_KEY = "";
 
+    private static final int INTERVAL = 10;
+
     private final MessagingConfiguration.MtaStream mtaStream;
 
     private final RestTemplate restTemplate;
@@ -51,7 +53,7 @@ public class MtaService {
         this.influxDB.setDatabase("mta");
     }
 
-    @Scheduled(cron = "0 */5 * * * *")
+    @Scheduled(cron = "0 */" + INTERVAL + " * * * *")
     public void publishMtaFeeds() {
         // Feed ids, more details at https://datamine.mta.info/list-of-feeds
         IntStream feedIds = IntStream.of(1, 2, 11, 16, 21, 26, 31, 36, 51);
@@ -77,7 +79,7 @@ public class MtaService {
             .flatMapValues(value -> value.stream().map(subway -> subway.get("route")).collect(Collectors.toList()))
             .map((key, value) -> new KeyValue<>(value, value))
             .groupByKey()
-            .windowedBy(TimeWindows.of(5 * 60 * 1000))
+            .windowedBy(TimeWindows.of(INTERVAL * 60 * 1000))
             .count(Materialized.as("subwaycounts"))
             .toStream()
             .map(this::createSubwayCount);
@@ -101,7 +103,7 @@ public class MtaService {
 
             // Parse response using protobuf
             GtfsRealtime.FeedMessage feedMessage = GtfsRealtime.FeedMessage.parseFrom(response.getBody());
-            long departureLimit = feedMessage.getHeader().getTimestamp() + 5 * 60;
+            long departureLimit = feedMessage.getHeader().getTimestamp() + INTERVAL * 60;
 
             // Only active subways are returned
             return feedMessage.getEntityList().stream()
