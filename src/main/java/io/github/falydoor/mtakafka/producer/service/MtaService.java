@@ -108,7 +108,7 @@ public class MtaService {
             // Only active subways are returned
             return feedMessage.getEntityList().stream()
                 .filter(feedEntity -> isActive(feedEntity, departureLimit))
-                .map(this::createSubway);
+                .map(Subway::new);
         } catch (Exception e) {
             log.error("Error while parsing MTA feed", e);
             return Stream.empty();
@@ -120,13 +120,6 @@ public class MtaService {
         return feedEntity.hasTripUpdate()
             && feedEntity.getTripUpdate().getStopTimeUpdateCount() > 0
             && feedEntity.getTripUpdate().getStopTimeUpdate(0).getDeparture().getTime() < departureLimit;
-    }
-
-    private Subway createSubway(GtfsRealtime.FeedEntity entity) {
-        Subway subway = new Subway();
-        subway.setRoute(entity.getTripUpdate().getTrip().getRouteId());
-        subway.setTrip(entity.getTripUpdate().getTrip().getTripId());
-        return subway;
     }
 
     private KeyValue<?, SubwayCount> createSubwayCount(Windowed<String> key, long value) {
