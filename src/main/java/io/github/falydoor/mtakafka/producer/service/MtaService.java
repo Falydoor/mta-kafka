@@ -84,7 +84,7 @@ public class MtaService {
     @StreamListener(MessagingConfiguration.MtaStream.INPUT)
     public void saveSubwayCount(SubwayCount subwayCount) {
         // Save measurement in influxdb
-        influxDB.write(Point.measurement(subwayCount.getRoute())
+        influxDB.write(Point.measurement("line")
             .time(subwayCount.getStart().toEpochMilli(), TimeUnit.MILLISECONDS)
             .tag("route", subwayCount.getRoute())
             .addField("count", subwayCount.getCount())
